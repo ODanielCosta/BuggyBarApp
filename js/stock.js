@@ -37,6 +37,7 @@ function renderStockManagement() {
                         <p class="text-xs text-slate-500 mt-0.5">
                             Reg: <span class="font-semibold text-slate-700">€${item.regPrice.toFixed(2)}</span> · 
                             Mem: <span class="font-semibold text-blue-600">€${item.memPrice.toFixed(2)}</span>
+                            ${item.colabPrice !== undefined ? ` · Colab: <span class="font-semibold text-purple-600">€${item.colabPrice.toFixed(2)}</span>` : ''}
                         </p>
                     </div>
                 </div>

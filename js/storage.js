@@ -27,10 +27,10 @@ const DEFAULT_CATALOG = [
     { id: 11, name: "TWIX", icon: "🍫", category: "snacks", regPrice: 2.50, memPrice: 2.00 },
     { id: 12, name: "Pringles", icon: "🥔", category: "snacks", regPrice: 4.50, memPrice: 4.00 },
     // Sandwiches
-    { id: 13, name: "Mista", icon: "🥪", category: "sandwiches", regPrice: 7.00, memPrice: 6.00 },
-    { id: 14, name: "Atum", icon: "🐟", category: "sandwiches", regPrice: 8.00, memPrice: 7.00 },
-    { id: 15, name: "Bacon & ovo", icon: "🥓", category: "sandwiches", regPrice: 8.00, memPrice: 7.00 },
-    { id: 16, name: "Frango", icon: "🍗", category: "sandwiches", regPrice: 8.00, memPrice: 7.00 }
+    { id: 13, name: "Mista", icon: "🥪", category: "sandwiches", regPrice: 7.00, memPrice: 6.00, colabPrice: 2.00 },
+    { id: 14, name: "Atum", icon: "🐟", category: "sandwiches", regPrice: 8.00, memPrice: 7.00, colabPrice: 2.00 },
+    { id: 15, name: "Bacon & ovo", icon: "🥓", category: "sandwiches", regPrice: 8.00, memPrice: 7.00, colabPrice: 2.00 },
+    { id: 16, name: "Frango", icon: "🍗", category: "sandwiches", regPrice: 8.00, memPrice: 7.00, colabPrice: 2.00 }
 ];
 
 const StorageManager = {
@@ -45,14 +45,15 @@ const StorageManager = {
             if (!Array.isArray(parsed) || parsed.length === 0) {
                 parsed = DEFAULT_CATALOG;
             }
-            // Auto-merge missing icons and categories from DEFAULT_CATALOG
+            // Auto-merge missing icons, categories, and colabPrice from DEFAULT_CATALOG
             parsed = parsed.map(item => {
                 const defaultItem = DEFAULT_CATALOG.find(d => d.id === item.id);
                 return {
                     ...defaultItem,
                     ...item,
                     icon: item.icon || (defaultItem ? defaultItem.icon : "🏷️"),
-                    category: item.category || (defaultItem ? defaultItem.category : "drinks")
+                    category: item.category || (defaultItem ? defaultItem.category : "drinks"),
+                    colabPrice: (defaultItem && defaultItem.colabPrice !== undefined) ? defaultItem.colabPrice : item.colabPrice
                 };
             });
             localStorage.setItem(STORAGE_KEYS.CATALOG, JSON.stringify(parsed));

@@ -48,54 +48,66 @@
 
         <!-- ================= POS SECTION ================= -->
         <section id="content-pos" class="tab-content active">
-            <!-- Catalog Header & View Switcher -->
+            <!-- Catalog Header & Controls -->
             <div class="flex items-center justify-between mb-2.5">
                 <div>
                     <h2 class="text-base font-bold text-slate-900 leading-tight">Catalog</h2>
                     <p class="text-[11px] text-slate-500">Select items to add to order</p>
                 </div>
-                <!-- View Mode Toggle: Grid vs List -->
-                <div class="flex items-center bg-slate-200 p-0.5 rounded-lg border border-slate-300">
+                <div class="flex items-center gap-1.5">
+                    <!-- Hide Out of Stock Toggle Button -->
                     <button 
                         type="button" 
-                        id="btn-view-grid" 
-                        class="p-1.5 rounded-md text-xs font-bold transition-all bg-white text-blue-600 shadow-2xs" 
-                        title="Square Grid View"
+                        id="btn-toggle-in-stock" 
+                        class="px-2 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1 shadow-2xs" 
+                        title="Toggle to hide items not available in stock"
                     >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <rect x="3" y="3" width="7" height="7" rx="1.5" stroke-width="2"/>
-                            <rect x="14" y="3" width="7" height="7" rx="1.5" stroke-width="2"/>
-                            <rect x="3" y="14" width="7" height="7" rx="1.5" stroke-width="2"/>
-                            <rect x="14" y="14" width="7" height="7" rx="1.5" stroke-width="2"/>
-                        </svg>
+                        <span id="in-stock-icon">⚪</span>
+                        <span class="text-[11px] font-bold">In Stock Only</span>
                     </button>
-                    <button 
-                        type="button" 
-                        id="btn-view-list" 
-                        class="p-1.5 rounded-md text-xs font-bold transition-all text-slate-600 hover:text-slate-900" 
-                        title="Compact List View"
-                    >
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <line x1="4" y1="6" x2="20" y2="6" stroke-width="2" stroke-linecap="round"/>
-                            <line x1="4" y1="12" x2="20" y2="12" stroke-width="2" stroke-linecap="round"/>
-                            <line x1="4" y1="18" x2="20" y2="18" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    </button>
+                    <!-- View Mode Toggle: Grid vs List -->
+                    <div class="flex items-center bg-slate-200 p-0.5 rounded-lg border border-slate-300">
+                        <button 
+                            type="button" 
+                            id="btn-view-grid" 
+                            class="p-1.5 rounded-md text-xs font-bold transition-all bg-white text-blue-600 shadow-2xs" 
+                            title="Square Grid View"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <rect x="3" y="3" width="7" height="7" rx="1.5" stroke-width="2"/>
+                                <rect x="14" y="3" width="7" height="7" rx="1.5" stroke-width="2"/>
+                                <rect x="3" y="14" width="7" height="7" rx="1.5" stroke-width="2"/>
+                                <rect x="14" y="14" width="7" height="7" rx="1.5" stroke-width="2"/>
+                            </svg>
+                        </button>
+                        <button 
+                            type="button" 
+                            id="btn-view-list" 
+                            class="p-1.5 rounded-md text-xs font-bold transition-all text-slate-600 hover:text-slate-900" 
+                            title="Compact List View"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <line x1="4" y1="6" x2="20" y2="6" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="4" y1="12" x2="20" y2="12" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="4" y1="18" x2="20" y2="18" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <!-- Category Filter Pills -->
             <div id="category-filter-bar" class="flex gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none">
-                <button type="button" class="category-btn active px-3 py-1 text-xs font-bold rounded-full bg-blue-600 text-white whitespace-nowrap shadow-2xs" data-category="all">
+                <button type="button" class="category-btn active px-3 py-1 text-xs font-bold rounded-full border border-slate-200 bg-white text-slate-700 whitespace-nowrap shadow-2xs" data-category="all">
                     All <span id="cat-count-all" class="text-[10px] opacity-80">(16)</span>
                 </button>
-                <button type="button" class="category-btn px-3 py-1 text-xs font-semibold rounded-full bg-white text-slate-700 border border-slate-200 hover:border-slate-300 whitespace-nowrap" data-category="drinks">
+                <button type="button" class="category-btn px-3 py-1 text-xs font-semibold rounded-full border border-slate-200 bg-white text-slate-700 hover:border-slate-300 whitespace-nowrap" data-category="drinks">
                     🥤 Drinks <span id="cat-count-drinks" class="text-[10px] text-slate-400">(8)</span>
                 </button>
-                <button type="button" class="category-btn px-3 py-1 text-xs font-semibold rounded-full bg-white text-slate-700 border border-slate-200 hover:border-slate-300 whitespace-nowrap" data-category="snacks">
+                <button type="button" class="category-btn px-3 py-1 text-xs font-semibold rounded-full border border-slate-200 bg-white text-slate-700 hover:border-slate-300 whitespace-nowrap" data-category="snacks">
                     🍿 Snacks <span id="cat-count-snacks" class="text-[10px] text-slate-400">(4)</span>
                 </button>
-                <button type="button" class="category-btn px-3 py-1 text-xs font-semibold rounded-full bg-white text-slate-700 border border-slate-200 hover:border-slate-300 whitespace-nowrap" data-category="sandwiches">
+                <button type="button" class="category-btn px-3 py-1 text-xs font-semibold rounded-full border border-slate-200 bg-white text-slate-700 hover:border-slate-300 whitespace-nowrap" data-category="sandwiches">
                     🥪 Sandwiches <span id="cat-count-sandwiches" class="text-[10px] text-slate-400">(4)</span>
                 </button>
             </div>
@@ -310,17 +322,21 @@
                 </button>
             </div>
 
-            <!-- Price Tier Toggle (Regular vs Member) -->
+            <!-- Price Tier Toggle (Regular vs Member vs Colaborador) -->
             <div class="mb-4">
                 <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Price Tier</label>
-                <div class="grid grid-cols-2 gap-2">
-                    <button type="button" id="modal-btn-price-reg" class="py-2 px-3 border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold rounded-lg text-xs flex flex-col items-center">
+                <div id="modal-price-tier-container" class="grid grid-cols-2 gap-2">
+                    <button type="button" id="modal-btn-price-reg" class="py-2 px-2 border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold rounded-lg text-xs flex flex-col items-center">
                         <span>Regular</span>
                         <span id="modal-reg-price" class="text-sm">€0.00</span>
                     </button>
-                    <button type="button" id="modal-btn-price-mem" class="py-2 px-3 border border-slate-200 bg-white text-slate-700 font-semibold rounded-lg text-xs flex flex-col items-center hover:border-slate-300">
+                    <button type="button" id="modal-btn-price-mem" class="py-2 px-2 border border-slate-200 bg-white text-slate-700 font-semibold rounded-lg text-xs flex flex-col items-center hover:border-slate-300">
                         <span>Member</span>
                         <span id="modal-mem-price" class="text-sm">€0.00</span>
+                    </button>
+                    <button type="button" id="modal-btn-price-colab" class="hidden py-2 px-2 border border-slate-200 bg-white text-purple-700 font-semibold rounded-lg text-xs flex flex-col items-center hover:border-slate-300">
+                        <span>Colaborador</span>
+                        <span id="modal-colab-price" class="text-sm">€2.00</span>
                     </button>
                 </div>
             </div>

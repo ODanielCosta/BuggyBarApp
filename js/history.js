@@ -93,16 +93,26 @@ function renderHistory() {
                 } catch (e) {}
             }
 
-            const itemsListHtml = entry.items.map(item => `
+            const itemsListHtml = entry.items.map(item => {
+                let pLabel = 'Reg';
+                let pClass = 'text-slate-400';
+                if (item.priceType === 'mem') {
+                    pLabel = 'Mem';
+                    pClass = 'text-blue-600 font-semibold';
+                } else if (item.priceType === 'colab') {
+                    pLabel = 'Colab';
+                    pClass = 'text-purple-600 font-bold';
+                }
+                return `
                 <div class="flex justify-between items-center py-0.5 text-slate-700">
                     <span>
                         <span class="mr-1">${item.icon || '🏷️'}</span>
                         <b class="text-slate-900">${item.qty}x</b> ${item.name}
-                        <span class="text-[9px] text-slate-400">(${item.priceType === 'mem' ? 'Mem' : 'Reg'})</span>
+                        <span class="text-[9px] ${pClass}">(${pLabel})</span>
                     </span>
                     <span class="font-semibold">€${(item.subtotal || (item.unitPrice ? item.unitPrice * item.qty : 0)).toFixed(2)}</span>
                 </div>
-            `).join('');
+            `}).join('');
 
             const tipHtml = entry.tip > 0 ? `
                 <div class="flex justify-between items-center text-amber-700 text-[11px] font-bold border-t border-slate-100 pt-1 mt-1">
