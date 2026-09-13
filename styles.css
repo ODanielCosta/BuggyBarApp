@@ -1,0 +1,117 @@
+/* Buggy Bar Custom Styles */
+:root {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+}
+
+body {
+    -webkit-tap-highlight-color: transparent;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Tab Switching */
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: block;
+    animation: fadeIn 0.15s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(2px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Segmented Tab Bar */
+.tab-btn {
+    transition: all 0.2s ease;
+    position: relative;
+}
+.tab-btn.active {
+    color: #2563eb;
+    font-weight: 700;
+}
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2.5px;
+    background-color: #2563eb;
+    border-radius: 2px 2px 0 0;
+}
+
+/* Category Filter Buttons */
+.category-btn.active {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+    border-color: #2563eb !important;
+}
+
+/* Tip Buttons */
+.tip-btn.active {
+    background-color: #d97706 !important;
+    color: #ffffff !important;
+    border-color: #d97706 !important;
+}
+
+/* Touch Friendly Buttons */
+button {
+    touch-action: manipulation;
+    user-select: none;
+}
+
+button:active {
+    transform: scale(0.97);
+}
+
+/* Grid & List View Styles for POS items */
+#pos-items.grid-view {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+#pos-items.list-view {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+/* Modals */
+.modal-backdrop {
+    background-color: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(3px);
+    transition: opacity 0.2s ease;
+}
+
+/* Toast notification */
+.toast-slide {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from { transform: translate(-50%, -100%); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
+}
+
+/* Hide scrollbar for category pills */
+.scrollbar-none::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}

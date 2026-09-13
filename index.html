@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Buggy Bar POS</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
+
+    <!-- Toast Notification -->
+    <div id="toast" class="hidden fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-slate-900 text-white text-sm font-semibold rounded-full shadow-lg flex items-center gap-2">
+        <span id="toast-icon">✅</span>
+        <span id="toast-msg">Action completed</span>
+    </div>
+
+    <!-- Header & Navigation Bar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+        <div class="max-w-md mx-auto px-4 pt-3 pb-0">
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">🍹</span>
+                    <h1 class="text-lg font-black tracking-tight text-slate-900">Buggy Bar</h1>
+                </div>
+                <span id="current-date-badge" class="text-xs font-semibold px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md">
+                    Today
+                </span>
+            </div>
+            <!-- Segmented 3-Tab Navigation -->
+            <nav class="flex border-b border-slate-200 text-sm">
+                <button id="tab-pos" class="tab-btn active flex-1 py-2.5 text-center font-semibold text-slate-600 hover:text-blue-600 flex items-center justify-center gap-1.5">
+                    <span>🛒</span> POS
+                </button>
+                <button id="tab-stock" class="tab-btn flex-1 py-2.5 text-center font-semibold text-slate-600 hover:text-blue-600 flex items-center justify-center gap-1.5">
+                    <span>📦</span> Stock
+                </button>
+                <button id="tab-history" class="tab-btn flex-1 py-2.5 text-center font-semibold text-slate-600 hover:text-blue-600 flex items-center justify-center gap-1.5">
+                    <span>📜</span> History
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-md mx-auto p-3.5 pb-20">
+
+        <!-- ================= POS SECTION ================= -->
+        <section id="content-pos" class="tab-content active">
+            <!-- Catalog Header & View Switcher -->
+            <div class="flex items-center justify-between mb-2.5">
+                <div>
+                    <h2 class="text-base font-bold text-slate-900 leading-tight">Catalog</h2>
+                    <p class="text-[11px] text-slate-500">Select items to add to order</p>
+                </div>
+                <!-- View Mode Toggle: Grid vs List -->
+                <div class="flex items-center bg-slate-200 p-0.5 rounded-lg border border-slate-300">
+                    <button 
+                        type="button" 
+                        id="btn-view-grid" 
+                        class="p-1.5 rounded-md text-xs font-bold transition-all bg-white text-blue-600 shadow-2xs" 
+                        title="Square Grid View"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <rect x="3" y="3" width="7" height="7" rx="1.5" stroke-width="2"/>
+                            <rect x="14" y="3" width="7" height="7" rx="1.5" stroke-width="2"/>
+                            <rect x="3" y="14" width="7" height="7" rx="1.5" stroke-width="2"/>
+                            <rect x="14" y="14" width="7" height="7" rx="1.5" stroke-width="2"/>
+                        </svg>
+                    </button>
+                    <button 
+                        type="button" 
+                        id="btn-view-list" 
+                        class="p-1.5 rounded-md text-xs font-bold transition-all text-slate-600 hover:text-slate-900" 
+                        title="Compact List View"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <line x1="4" y1="6" x2="20" y2="6" stroke-width="2" stroke-linecap="round"/>
+                            <line x1="4" y1="12" x2="20" y2="12" stroke-width="2" stroke-linecap="round"/>
+                            <line x1="4" y1="18" x2="20" y2="18" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Category Filter Pills -->
+            <div id="category-filter-bar" class="flex gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none">
+                <button type="button" class="category-btn active px-3 py-1 text-xs font-bold rounded-full bg-blue-600 text-white whitespace-nowrap shadow-2xs" data-category="all">
+                    All <span id="cat-count-all" class="text-[10px] opacity-80">(16)</span>
+                </button>
+                <button type="button" class="category-btn px-3 py-1 text-xs font-semibold rounded-full bg-white text-slate-700 border border-slate-200 hover:border-slate-300 whitespace-nowrap" data-category="drinks">
+                    🥤 Drinks <span id="cat-count-drinks" class="text-[10px] text-slate-400">(8)</span>
+                </button>
+                <button type="button" class="category-btn px-3 py-1 text-xs font-semibold rounded-full bg-white text-slate-700 border border-slate-200 hover:border-slate-300 whitespace-nowrap" data-category="snacks">
+                    🍿 Snacks <span id="cat-count-snacks" class="text-[10px] text-slate-400">(4)</span>
+                </button>
+                <button type="button" class="category-btn px-3 py-1 text-xs font-semibold rounded-full bg-white text-slate-700 border border-slate-200 hover:border-slate-300 whitespace-nowrap" data-category="sandwiches">
+                    🥪 Sandwiches <span id="cat-count-sandwiches" class="text-[10px] text-slate-400">(4)</span>
+                </button>
+            </div>
+
+            <!-- Products Catalog Container (Dynamic Grid or List) -->
+            <div id="pos-items" class="grid grid-cols-2 gap-2 mb-5">
+                <!-- Products injected by pos.js -->
+            </div>
+
+            <!-- Current Order & Checkout Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="bg-slate-50 px-3.5 py-2.5 border-b border-slate-200 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-slate-900 text-sm">Current Order</span>
+                        <span id="cart-item-count" class="bg-blue-600 text-white text-[11px] font-bold px-2 py-0.5 rounded-full">0 items</span>
+                    </div>
+                    <button id="btn-clear-cart" class="text-xs text-red-500 hover:text-red-700 font-semibold flex items-center gap-1">
+                        Clear
+                    </button>
+                </div>
+
+                <div class="p-3.5">
+                    <!-- Order Items List -->
+                    <div id="cart-list" class="space-y-1.5 mb-3 max-h-48 overflow-y-auto pr-1">
+                        <!-- Order line items injected here -->
+                    </div>
+
+                    <!-- Order Subtotal Row -->
+                    <div class="pt-2 border-t border-slate-100 flex items-baseline justify-between mb-2">
+                        <span class="text-xs font-semibold text-slate-500">Items Subtotal:</span>
+                        <span id="cart-subtotal" class="text-base font-bold text-slate-800">€0.00</span>
+                    </div>
+
+                    <!-- Tip Section -->
+                    <div class="bg-amber-50/70 border border-amber-200/80 rounded-lg p-2.5 mb-3">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xs font-bold text-amber-900 flex items-center gap-1">
+                                <span>🪙</span> Add Tip:
+                            </span>
+                            <span id="tip-amount-display" class="text-xs font-black text-amber-800">€0.00</span>
+                        </div>
+                        <div class="flex gap-1 flex-wrap">
+                            <button type="button" class="tip-btn active px-2 py-1 text-[11px] font-bold bg-white text-slate-700 border border-slate-300 rounded" data-tip="0">No Tip</button>
+                            <button type="button" class="tip-btn px-2 py-1 text-[11px] font-bold bg-white text-slate-700 border border-slate-300 rounded" data-tip="keep_change" id="btn-tip-keep-change">Keep Change</button>
+                            <button type="button" class="tip-btn px-2 py-1 text-[11px] font-bold bg-white text-slate-700 border border-slate-300 rounded" data-tip="0.50">+€0.50</button>
+                            <button type="button" class="tip-btn px-2 py-1 text-[11px] font-bold bg-white text-slate-700 border border-slate-300 rounded" data-tip="1.00">+€1.00</button>
+                            <button type="button" class="tip-btn px-2 py-1 text-[11px] font-bold bg-white text-slate-700 border border-slate-300 rounded" data-tip="2.00">+€2.00</button>
+                        </div>
+                    </div>
+
+                    <!-- Grand Total Row -->
+                    <div class="flex items-baseline justify-between mb-3 pb-2 border-b border-slate-100">
+                        <span class="text-xs font-black uppercase tracking-wider text-slate-600">Total to Pay</span>
+                        <span id="cart-total" class="text-2xl font-black text-slate-900">€0.00</span>
+                    </div>
+
+                    <!-- Cash Received & Quick Money Buttons -->
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 mb-3.5 space-y-2">
+                        <div class="flex items-center justify-between gap-2">
+                            <label for="cash-received" class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                                Cash Received:
+                            </label>
+                            <input 
+                                type="number" 
+                                id="cash-received" 
+                                step="0.50" 
+                                min="0" 
+                                placeholder="0.00" 
+                                class="w-28 text-right font-black text-base bg-white border border-slate-300 rounded-md px-2.5 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                        </div>
+
+                        <!-- Quick Cash Shortcuts -->
+                        <div class="flex gap-1 flex-wrap pt-0.5">
+                            <button type="button" class="quick-cash-btn text-xs font-semibold bg-white hover:bg-slate-100 border border-slate-300 rounded px-2 py-0.5 text-slate-700" data-amount="exact">Exact</button>
+                            <button type="button" class="quick-cash-btn text-xs font-semibold bg-white hover:bg-slate-100 border border-slate-300 rounded px-2 py-0.5 text-slate-700" data-amount="5">€5</button>
+                            <button type="button" class="quick-cash-btn text-xs font-semibold bg-white hover:bg-slate-100 border border-slate-300 rounded px-2 py-0.5 text-slate-700" data-amount="10">€10</button>
+                            <button type="button" class="quick-cash-btn text-xs font-semibold bg-white hover:bg-slate-100 border border-slate-300 rounded px-2 py-0.5 text-slate-700" data-amount="20">€20</button>
+                            <button type="button" class="quick-cash-btn text-xs font-semibold bg-white hover:bg-slate-100 border border-slate-300 rounded px-2 py-0.5 text-slate-700" data-amount="50">€50</button>
+                        </div>
+
+                        <!-- Change Due Banner -->
+                        <div id="change-container" class="flex items-center justify-between pt-1.5 border-t border-slate-200">
+                            <span id="change-label" class="text-xs font-bold text-slate-600">Change Due:</span>
+                            <span id="change-returned" class="text-lg font-black text-emerald-600">€0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Checkout Action Button -->
+                    <button 
+                        id="btn-checkout" 
+                        disabled
+                        class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-lg shadow-sm flex items-center justify-center gap-2 text-base transition-colors"
+                    >
+                        <span>✓</span> Complete Purchase
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= STOCK SECTION ================= -->
+        <section id="content-stock" class="tab-content">
+            <div class="flex items-center justify-between mb-3">
+                <div>
+                    <h2 class="text-base font-bold text-slate-900">Daily Stock Management</h2>
+                    <p class="text-xs text-slate-500">Set and adjust daily quantities</p>
+                </div>
+                <button id="btn-reset-stock" class="text-xs font-semibold text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-2.5 py-1 rounded">
+                    Reset All to 0
+                </button>
+            </div>
+
+            <!-- Total Units Stocked Overview -->
+            <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-3.5 flex items-center justify-between">
+                <span class="text-xs font-semibold text-blue-900">Total Units in Stock:</span>
+                <span id="stock-total-units" class="text-base font-extrabold text-blue-700">0</span>
+            </div>
+
+            <!-- Stock List of all catalog items -->
+            <div id="stock-list" class="space-y-2 mb-6">
+                <!-- Stock cards injected by stock.js -->
+            </div>
+
+            <!-- Stock Insertion Audit Log Section -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
+                <button 
+                    type="button" 
+                    id="btn-toggle-stock-log" 
+                    class="w-full px-4 py-3 bg-slate-50 hover:bg-slate-100 text-left font-bold text-xs text-slate-700 flex items-center justify-between border-b border-slate-200"
+                >
+                    <div class="flex items-center gap-2">
+                        <span>📋</span>
+                        <span>Today's Stock Activity Log</span>
+                        <span id="stock-log-badge" class="bg-slate-200 text-slate-700 text-[10px] font-black px-1.5 py-0.2 rounded-full">0</span>
+                    </div>
+                    <span id="stock-log-arrow" class="text-slate-400 text-xs transition-transform">▼</span>
+                </button>
+
+                <div id="stock-log-container" class="p-3 space-y-2 max-h-60 overflow-y-auto">
+                    <!-- Log entries injected by stock.js -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= HISTORY SECTION ================= -->
+        <section id="content-history" class="tab-content">
+            <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+                <div>
+                    <h2 class="text-base font-bold text-slate-900">Sales History</h2>
+                    <p class="text-xs text-slate-500">Daily reports & data backups</p>
+                </div>
+                <div class="flex gap-1.5 flex-wrap">
+                    <button id="btn-clear-today-history" class="text-xs font-bold bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 px-2.5 py-1 rounded flex items-center gap-1 shadow-2xs">
+                        <span>🗑️</span> Clear Today
+                    </button>
+                    <button id="btn-export-data" class="text-xs font-semibold bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 px-2.5 py-1 rounded flex items-center gap-1 shadow-2xs">
+                        <span>📥</span> Export
+                    </button>
+                    <button id="btn-import-data" class="text-xs font-semibold bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 px-2.5 py-1 rounded flex items-center gap-1 shadow-2xs">
+                        <span>📤</span> Import
+                    </button>
+                    <input type="file" id="backup-import-file" accept=".json" class="hidden">
+                </div>
+            </div>
+
+            <!-- Daily Summary Card (Now with Tips!) -->
+            <div id="daily-summary-card" class="bg-white border border-slate-200 rounded-xl p-3.5 mb-4 shadow-xs">
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Today's Performance</h3>
+                <div class="grid grid-cols-4 gap-1.5 text-center">
+                    <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                        <div class="text-[10px] text-slate-500 font-semibold">Revenue</div>
+                        <div id="summary-revenue" class="text-sm font-black text-emerald-600">€0.00</div>
+                    </div>
+                    <div class="bg-amber-50/60 p-2 rounded-lg border border-amber-100">
+                        <div class="text-[10px] text-amber-700 font-semibold">Tips</div>
+                        <div id="summary-tips" class="text-sm font-black text-amber-600">€0.00</div>
+                    </div>
+                    <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                        <div class="text-[10px] text-slate-500 font-semibold">Orders</div>
+                        <div id="summary-orders" class="text-sm font-black text-blue-600">0</div>
+                    </div>
+                    <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                        <div class="text-[10px] text-slate-500 font-semibold">Units</div>
+                        <div id="summary-items" class="text-sm font-black text-indigo-600">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grouped Order History List -->
+            <div id="history-list" class="space-y-3">
+                <!-- History entries injected by history.js -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================= QUANTITY SELECTION MODAL ================= -->
+    <div id="modal-qty-picker" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+        <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-xl border border-slate-200">
+            <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-2.5">
+                    <span id="modal-item-icon" class="text-3xl">📦</span>
+                    <div>
+                        <h3 id="modal-item-title" class="text-base font-black text-slate-900 leading-tight">Item Name</h3>
+                        <span id="modal-item-stock" class="inline-block text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 mt-0.5">
+                            Available: 0
+                        </span>
+                    </div>
+                </div>
+                <button id="btn-close-qty-modal" class="text-slate-400 hover:text-slate-600 text-xl font-bold p-1">
+                    &times;
+                </button>
+            </div>
+
+            <!-- Price Tier Toggle (Regular vs Member) -->
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Price Tier</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" id="modal-btn-price-reg" class="py-2 px-3 border-2 border-blue-600 bg-blue-50 text-blue-700 font-bold rounded-lg text-xs flex flex-col items-center">
+                        <span>Regular</span>
+                        <span id="modal-reg-price" class="text-sm">€0.00</span>
+                    </button>
+                    <button type="button" id="modal-btn-price-mem" class="py-2 px-3 border border-slate-200 bg-white text-slate-700 font-semibold rounded-lg text-xs flex flex-col items-center hover:border-slate-300">
+                        <span>Member</span>
+                        <span id="modal-mem-price" class="text-sm">€0.00</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quantity Stepper -->
+            <div class="mb-5">
+                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Quantity to Sell</label>
+                <div class="flex items-center justify-between gap-3 bg-slate-50 p-2 rounded-xl border border-slate-200">
+                    <button type="button" id="modal-btn-qty-minus" class="w-12 h-12 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg text-xl font-black text-slate-800 flex items-center justify-center active:scale-95 shadow-2xs">
+                        -
+                    </button>
+                    <div class="text-center">
+                        <span id="modal-qty-display" class="text-3xl font-black text-slate-900">1</span>
+                        <span class="block text-[10px] text-slate-400 font-medium">units</span>
+                    </div>
+                    <button type="button" id="modal-btn-qty-plus" class="w-12 h-12 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg text-xl font-black text-slate-800 flex items-center justify-center active:scale-95 shadow-2xs">
+                        +
+                    </button>
+                </div>
+            </div>
+
+            <!-- Subtotal Preview & Action Buttons -->
+            <div class="flex items-center justify-between border-t border-slate-100 pt-3 mb-4">
+                <span class="text-xs text-slate-500 font-semibold">Item Subtotal:</span>
+                <span id="modal-item-subtotal" class="text-xl font-black text-slate-900">€0.00</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+                <button type="button" id="btn-cancel-qty" class="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-sm">
+                    Cancel
+                </button>
+                <button type="button" id="btn-confirm-add-qty" class="py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-sm shadow-sm">
+                    Add to Order
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/storage.js"></script>
+    <script src="js/nav.js"></script>
+    <script src="js/stock.js"></script>
+    <script src="js/pos.js"></script>
+    <script src="js/history.js"></script>
+</body>
+</html>
