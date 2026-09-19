@@ -180,6 +180,19 @@ button:active {
 
 /* The Report table is dense on phones, so use compact but matching markers. */
 @media (max-width: 639px) {
+    #modal-end-of-run {
+        padding: 0;
+    }
+
+    #modal-end-of-run > div {
+        width: 100%;
+        max-width: none;
+        height: 100dvh;
+        max-height: none;
+        border: 0;
+        border-radius: 0;
+    }
+
     .report-item-icon {
         width: 1.5rem !important;
         height: 1.5rem !important;
