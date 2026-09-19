@@ -178,6 +178,20 @@ button:active {
     height: 2.25rem;
 }
 
+/* The Report table is dense on phones, so use compact but matching markers. */
+@media (max-width: 639px) {
+    .report-item-icon {
+        width: 1.5rem !important;
+        height: 1.5rem !important;
+        font-size: 1.5rem !important;
+    }
+
+    .report-item-icon .item-img {
+        width: 1.5rem !important;
+        height: 1.5rem !important;
+    }
+}
+
 /* Reduce scale effect on images inside buttons — they don't need it */
 .item-img:active {
     transform: none;
