@@ -390,7 +390,7 @@ function renderEndOfRunModal() {
         tr.innerHTML = `
             <td class="py-2 px-2">
                 <div class="flex items-center gap-1.5 font-bold text-slate-900">
-                    <span>${item.icon || '📦'}</span>
+                    <span class="report-item-icon flex h-9 w-9 shrink-0 items-center justify-center text-[2.25rem] leading-none">${item.icon || '📦'}</span>
                     <span>${item.name}</span>
                 </div>
             </td>

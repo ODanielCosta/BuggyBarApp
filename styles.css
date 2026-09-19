@@ -172,6 +172,12 @@ button:active {
     height: 2.25rem;
 }
 
+/* Report icons and product images share the same fixed visual slot. */
+.report-item-icon .item-img {
+    width: 2.25rem;
+    height: 2.25rem;
+}
+
 /* Reduce scale effect on images inside buttons — they don't need it */
 .item-img:active {
     transform: none;
