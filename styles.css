@@ -9,18 +9,43 @@ body {
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
-/* Tab Switching */
+/* Tab Switching & Smooth Directional Slide */
 .tab-content {
     display: none;
+    will-change: transform, opacity;
 }
 .tab-content.active {
     display: block;
-    animation: fadeIn 0.15s ease-in-out;
+}
+.tab-content.slide-in-right {
+    display: block;
+    animation: slideInRight 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.tab-content.slide-in-left {
+    display: block;
+    animation: slideInLeft 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(2px); }
-    to { opacity: 1; transform: translateY(0); }
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(32px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-32px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 /* Segmented Tab Bar */
@@ -114,4 +139,40 @@ button:active {
 ::-webkit-scrollbar-thumb {
     background: #cbd5e1;
     border-radius: 4px;
+}
+
+/* Product image icons */
+.item-img {
+    display: block;
+    width: 2.25rem;   /* 36px — fits nicely in grid cards */
+    height: 2.25rem;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    background: #f8fafc;
+    flex-shrink: 0;
+}
+
+/* Larger variant for the qty modal */
+#modal-item-icon .item-img {
+    width: 2.75rem;
+    height: 2.75rem;
+}
+
+/* In the stock list cards the icon container is a bit bigger */
+#stock-list .item-img {
+    width: 2rem;
+    height: 2rem;
+}
+
+/* Keep History product images inline with their sale details. */
+.history-item-icon .item-img {
+    width: 2.25rem;
+    height: 2.25rem;
+}
+
+/* Reduce scale effect on images inside buttons — they don't need it */
+.item-img:active {
+    transform: none;
 }

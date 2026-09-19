@@ -29,9 +29,33 @@ function initPOS() {
     setupCashAndTipListeners();
     setupCheckoutListener();
 
+    // Check daily reset on load
+    if (typeof StorageManager.checkAndHandleDailyReset === 'function') {
+        StorageManager.checkAndHandleDailyReset();
+    }
+
+    // Listen for tab visibility changes (e.g. phone screen unlocked next morning)
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && typeof StorageManager.checkAndHandleDailyReset === 'function') {
+            StorageManager.checkAndHandleDailyReset();
+        }
+    });
+
     window.addEventListener('bb_stock_updated', () => {
         renderPosCatalog();
         renderCart();
+    });
+
+    window.addEventListener('bb_day_reset', (e) => {
+        cart = [];
+        tipAmount = 0;
+        resetCashInput();
+        renderCart();
+        renderPosCatalog();
+        const msg = e.detail && e.detail.manual 
+            ? "🌅 Run closed & reset for next session."
+            : "🌅 New day started! Stock and cart reset. History is preserved.";
+        showToast(msg);
     });
 }
 
@@ -188,7 +212,7 @@ function renderPosCatalog() {
         const isOutOfStock = availableStock <= 0;
 
         const card = document.createElement('div');
-        const hasColab = item.colabPrice !== undefined;
+        const hasColab = item.category === 'sandwiches' && item.colabPrice !== undefined;
 
         if (currentViewMode === 'grid') {
             // Compact Square Card View
@@ -289,14 +313,15 @@ function openQuantityModal(item, availableStock) {
 
     if (!modal) return;
 
-    if (iconSpan) iconSpan.textContent = item.icon || '📦';
+    if (iconSpan) iconSpan.innerHTML = item.icon || '📦';
     title.textContent = item.name;
     stockBadge.textContent = `Available: ${availableStock} units`;
     regPriceSpan.textContent = `€${item.regPrice.toFixed(2)}`;
     memPriceSpan.textContent = `€${item.memPrice.toFixed(2)}`;
 
-    // If item has Colaborador price (e.g. sandwiches €2.00), show 3rd option
-    if (item.colabPrice !== undefined && btnPriceColab) {
+    // If item has Colaborador price (ONLY sandwiches €2.00), show 3rd option
+    const isSandwichColab = item.category === 'sandwiches' && item.colabPrice !== undefined;
+    if (isSandwichColab && btnPriceColab) {
         btnPriceColab.classList.remove('hidden');
         if (colabPriceSpan) colabPriceSpan.textContent = `€${item.colabPrice.toFixed(2)}`;
         if (tierContainer) {
@@ -308,6 +333,9 @@ function openQuantityModal(item, availableStock) {
         if (tierContainer) {
             tierContainer.classList.remove('grid-cols-3');
             tierContainer.classList.add('grid-cols-2');
+        }
+        if (modalPriceType === 'colab') {
+            modalPriceType = 'reg';
         }
     }
 
@@ -356,7 +384,7 @@ function updateModalUI() {
 
     let unitPrice = modalCurrentItem.regPrice;
     if (modalPriceType === 'mem') unitPrice = modalCurrentItem.memPrice;
-    if (modalPriceType === 'colab' && modalCurrentItem.colabPrice !== undefined) {
+    if (modalPriceType === 'colab' && modalCurrentItem.category === 'sandwiches' && modalCurrentItem.colabPrice !== undefined) {
         unitPrice = modalCurrentItem.colabPrice;
     }
 
@@ -424,7 +452,7 @@ function setupModalListeners() {
 
             let unitPrice = modalCurrentItem.regPrice;
             if (modalPriceType === 'mem') unitPrice = modalCurrentItem.memPrice;
-            if (modalPriceType === 'colab' && modalCurrentItem.colabPrice !== undefined) {
+            if (modalPriceType === 'colab' && modalCurrentItem.category === 'sandwiches' && modalCurrentItem.colabPrice !== undefined) {
                 unitPrice = modalCurrentItem.colabPrice;
             }
 
@@ -613,19 +641,22 @@ function setupCashAndTipListeners() {
         });
     }
 
-    // Quick cash shortcuts
+    // Quick cash shortcuts (Cumulative on tap, plus Exact and Clear)
     const quickCashBtns = document.querySelectorAll('.quick-cash-btn');
     quickCashBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             const amount = btn.dataset.amount;
             const itemsSubtotal = getItemsSubtotal();
             const grandTotal = itemsSubtotal + tipAmount;
-            let newCash = 0;
+            let newCash = cashTendered;
 
             if (amount === 'exact') {
                 newCash = grandTotal;
+            } else if (amount === 'clear') {
+                newCash = 0;
             } else {
-                newCash = parseFloat(amount) || 0;
+                const addVal = parseFloat(amount) || 0;
+                newCash = (cashTendered || 0) + addVal;
             }
 
             if (cashInput) {

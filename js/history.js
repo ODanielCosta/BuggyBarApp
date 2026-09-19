@@ -1,17 +1,22 @@
 /**
  * History and Reporting logic for Buggy Bar POS.
  * Handles date-grouped transaction logs, daily metrics with tip tracking,
- * voiding orders with stock restoration, clearing today's history,
+ * voiding orders with stock restoration, clearing all history,
  * and JSON export/import.
  */
 
 function initHistory() {
     renderHistory();
     setupExportImportListeners();
-    setupClearTodayListener();
+    setupClearListeners();
     updateHeaderDate();
 
     window.addEventListener('bb_history_updated', () => {
+        renderHistory();
+    });
+
+    window.addEventListener('bb_day_reset', () => {
+        updateHeaderDate();
         renderHistory();
     });
 }
@@ -52,7 +57,7 @@ function renderHistory() {
         grouped[dateKey].push(entry);
     });
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = StorageManager.getLocalDateString();
 
     Object.keys(grouped).sort().reverse().forEach(dateStr => {
         const dateSection = document.createElement('div');
@@ -71,11 +76,23 @@ function renderHistory() {
             }
         }
 
+        // Calculate day's items revenue and tips
+        let dayItemsRev = 0;
+        let dayTips = 0;
+        grouped[dateStr].forEach(e => {
+            dayItemsRev += typeof e.itemsSubtotal === 'number' 
+                ? e.itemsSubtotal 
+                : Math.max(0, (e.total || 0) - (e.tip || 0));
+            dayTips += (e.tip || 0);
+        });
+
         const dateHeader = document.createElement('div');
         dateHeader.className = 'flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 px-1';
         dateHeader.innerHTML = `
             <span>${dateLabel}</span>
-            <span class="text-slate-400 font-normal">${grouped[dateStr].length} order${grouped[dateStr].length === 1 ? '' : 's'}</span>
+            <span class="text-[11px] font-semibold text-slate-500">
+                Rev: <b class="text-emerald-700">€${dayItemsRev.toFixed(2)}</b>${dayTips > 0 ? ` · Tip: <b class="text-amber-700">€${dayTips.toFixed(2)}</b>` : ''} · ${grouped[dateStr].length} ord
+            </span>
         `;
         dateSection.appendChild(dateHeader);
 
@@ -104,13 +121,15 @@ function renderHistory() {
                     pClass = 'text-purple-600 font-bold';
                 }
                 return `
-                <div class="flex justify-between items-center py-0.5 text-slate-700">
-                    <span>
-                        <span class="mr-1">${item.icon || '🏷️'}</span>
-                        <b class="text-slate-900">${item.qty}x</b> ${item.name}
-                        <span class="text-[9px] ${pClass}">(${pLabel})</span>
-                    </span>
-                    <span class="font-semibold">€${(item.subtotal || (item.unitPrice ? item.unitPrice * item.qty : 0)).toFixed(2)}</span>
+                <div class="flex justify-between items-center gap-2 py-0.5 text-slate-700">
+                    <div class="flex min-w-0 items-center gap-1.5">
+                        <span class="history-item-icon flex h-9 w-9 shrink-0 items-center justify-center text-[2.25rem] leading-none">${item.icon || '🏷️'}</span>
+                        <span class="min-w-0">
+                            <b class="text-slate-900">${item.qty}x</b> ${item.name}
+                            <span class="text-[9px] ${pClass}">(${pLabel})</span>
+                        </span>
+                    </div>
+                    <span class="shrink-0 font-semibold">€${(item.subtotal || (item.unitPrice ? item.unitPrice * item.qty : 0)).toFixed(2)}</span>
                 </div>
             `}).join('');
 
@@ -168,7 +187,7 @@ function renderDailySummary(history) {
 
     if (!summaryRev || !summaryOrders || !summaryItems) return;
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = StorageManager.getLocalDateString();
 
     let todayRevenue = 0;
     let todayTips = 0;
@@ -178,7 +197,11 @@ function renderDailySummary(history) {
     history.forEach(entry => {
         const entryDate = entry.date || (entry.timestamp ? entry.timestamp.split('T')[0] : '');
         if (entryDate === todayStr) {
-            todayRevenue += (entry.total || 0);
+            // CRITICAL: Revenue is ONLY items sold, NOT tips!
+            const itemsRev = typeof entry.itemsSubtotal === 'number' 
+                ? entry.itemsSubtotal 
+                : Math.max(0, (entry.total || 0) - (entry.tip || 0));
+            todayRevenue += itemsRev;
             todayTips += (entry.tip || 0);
             todayOrdersCount += 1;
             if (Array.isArray(entry.items)) {
@@ -220,24 +243,23 @@ window.handleVoidTransaction = (id) => {
     }
 };
 
-function setupClearTodayListener() {
-    const clearBtn = document.getElementById('btn-clear-today-history');
-    if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-            const history = StorageManager.getHistory();
-            const todayStr = new Date().toISOString().split('T')[0];
-            const todayOrders = history.filter(t => (t.date || (t.timestamp && t.timestamp.split('T')[0])) === todayStr);
+function setupClearListeners() {
+    const clearAllBtn = document.getElementById('btn-clear-all-history');
 
-            if (todayOrders.length === 0) {
-                alert("There are no transactions recorded for today to clear.");
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', () => {
+            const history = StorageManager.getHistory();
+            if (history.length === 0) {
+                alert("There is no transaction history to clear.");
                 return;
             }
 
-            if (confirm(`Are you sure you want to clear ${todayOrders.length} transaction(s) from today? Older dates will be preserved.`)) {
-                StorageManager.clearTodayHistory();
+            if (confirm(`⚠️ DANGER: Are you sure you want to permanently clear ALL ${history.length} transaction(s) across all dates?\n\nThis will completely erase history.`)) {
+                StorageManager.clearAllHistory();
                 renderHistory();
+                window.dispatchEvent(new CustomEvent('bb_history_updated'));
                 if (window.showToast) {
-                    window.showToast("🗑️ Today's sales history cleared.");
+                    window.showToast("🗑️ All sales history cleared.");
                 }
             }
         });
